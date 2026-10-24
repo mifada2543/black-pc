@@ -99,7 +99,8 @@ struct Recording {
     double tsc_hz;
     std::string started, cpu, gpu;
     int fps;
-    bool aa, widescreen;
+    bool aa;
+    const char *aspect;
     uint32_t game_lo, game_hi, rt_lo, rt_hi;
     std::wstring rt_path;
 };
@@ -539,7 +540,7 @@ void write_report(Recording *r)
     };
     put("BLACK performance recording %s\n", r->started.c_str());
     put("%.1f s, %zu frames, frame rate setting %d fps, anti-aliasing %s, %s\n", r->seconds, F.size(), r->fps, r->aa ? "on" : "off",
-        r->widescreen ? "16:9" : "4:3");
+        r->aspect ? r->aspect : "16:9");
     if (!F.empty()) put("render size %ux%u at the start", F.front().rw, F.front().rh);
     if (!F.empty() && (F.back().rw != F.front().rw || F.back().rh != F.front().rh)) put(", %ux%u at the end", F.back().rw, F.back().rh);
     put("\nCPU: %s\nGPU: %s\n\n", r->cpu.c_str(), r->gpu.c_str());
@@ -675,7 +676,7 @@ void start()
     r->gpu = g_gpu_name;
     r->fps = g_cfg.fps;
     r->aa = g_cfg.aa;
-    r->widescreen = g_cfg.widescreen;
+    r->aspect = aspect_name(g_cfg.aspect);
     r->game_lo = kGameLo;
     r->game_hi = kGameHi;
     r->rt_lo = g_rt_lo;

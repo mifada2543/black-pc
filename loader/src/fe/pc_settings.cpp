@@ -74,7 +74,8 @@ template <size_t N> int nearest(const float (&list)[N], float v)
 }
 
 int shown_fps() { return g_cfg.fps_next ? g_cfg.fps_next : g_cfg.fps; }
-bool shown_wide() { return g_cfg.widescreen_next >= 0 ? g_cfg.widescreen_next != 0 : g_cfg.widescreen; }
+Aspect shown_aspect() { return g_cfg.aspect_next >= 0 ? (Aspect)g_cfg.aspect_next : g_cfg.aspect; }
+const wchar_t *aspect_label(int i) { return i == 0 ? L"4:3" : i == 1 ? L"16:9" : L"16:10"; }
 
 struct Row {
     const char *label;
@@ -102,12 +103,11 @@ const Row kRows[] = {
     {"FULLSCREEN", 2, [] { return (int)host3d::fullscreen(); }, [](int i) { host3d::set_fullscreen(i != 0); },
      [](int i) { return on_off(i); }},
     // DISPLAY
-    {"ASPECT RATIO", 2, [] { return (int)!shown_wide(); },
+    {"ASPECT RATIO", 3, [] { return (int)shown_aspect(); },
+     [](int i) { g_cfg.aspect_next = (Aspect)i == g_cfg.aspect ? -1 : i; },
      [](int i) {
-         bool wide = i == 0;
-         g_cfg.widescreen_next = wide == g_cfg.widescreen ? -1 : wide;
-     },
-     [](int i) { return std::wstring(i == 0 ? L"16:9" : L"4:3") + ((i == 0) != g_cfg.widescreen ? L" (NEXT START)" : L""); }},
+         return std::wstring(aspect_label(i)) + ((Aspect)i != g_cfg.aspect ? L" (NEXT START)" : L"");
+     }},
     {"FRAME RATE", 2, [] { return (int)(shown_fps() == 60); },
      [](int i) {
          int fps = i ? 60 : 30;

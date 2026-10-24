@@ -14,7 +14,8 @@ extern int g_width, g_height; // back buffer size
 void hle_flush(); // interpret pending inline push-buffer commands
 
 // Render resolution: host render targets are scale_x() x scale_y() times the Xbox size (--scale; in widescreen
-// the Xbox pixels are 4/3 wider than tall, so x is scaled 4/3 more to keep host pixels square).
+// the Xbox pixels are 4/3 (16:9) or 6/5 (16:10) wider than tall, so x is scaled that much more to keep host
+// pixels square).
 float scale_x();
 float scale_y();
 float target_scale_x(); // the bound render target's scale (1 for the small post-processing buffers)

@@ -11,6 +11,30 @@
 
 typedef LONG NTSTATUS;
 
+// The picture shape. BLACK's own widescreen mode is 16:9; 16:10 uses the same wide UI and projection
+// but a 1.6 camera aspect, so the picture gains height instead of being stretched.
+enum class Aspect { Normal4x3, Wide16x9, Wide16x10 };
+
+inline bool aspect_wide(Aspect a) { return a != Aspect::Normal4x3; }
+inline float aspect_ratio(Aspect a)
+{
+    switch (a) {
+    case Aspect::Normal4x3: return 4.0f / 3.0f;
+    case Aspect::Wide16x10: return 16.0f / 10.0f;
+    case Aspect::Wide16x9: break;
+    }
+    return 16.0f / 9.0f;
+}
+inline const char *aspect_name(Aspect a)
+{
+    switch (a) {
+    case Aspect::Normal4x3: return "4:3";
+    case Aspect::Wide16x10: return "16:10";
+    case Aspect::Wide16x9: break;
+    }
+    return "16:9";
+}
+
 // NTSTATUS values used by the HLE kernel (Xbox uses the NT values).
 constexpr NTSTATUS XSTATUS_SUCCESS = 0x00000000;
 constexpr NTSTATUS XSTATUS_ALERTED = 0x00000101;
@@ -61,8 +85,10 @@ struct Config {
     int window_w = 0, window_h = 0; // window client size; 0 = fit the screen
     // The console's video settings report a widescreen TV (EEPROM XC_VIDEO bit 16), as the Xbox Series does
     // for original Xbox games: BLACK then uses a 16:9 projection and its `_wide` UI layouts in the same 640x480
-    // buffer (anamorphic), and the loader renders and shows that buffer at 16:9. --normal-aspect turns it off.
-    bool widescreen = true;
+    // buffer (anamorphic), and the loader renders and shows that buffer at 16:9. 16:10 keeps the wide UI and
+    // makes the camera aspect 1.6 instead of 1.778, so the extra height is real geometry rather than a stretch.
+    // --normal-aspect turns widescreen off.
+    Aspect aspect = Aspect::Wide16x9;
     bool fullscreen = false;   // --fullscreen: start borderless fullscreen
     // Mouse look rotates the player directly (input/mouselook.cpp): mouse_sens x 0.022 degrees per count, the
     // scale most PC shooters use.
@@ -82,10 +108,10 @@ struct Config {
     std::wstring press_file;    // --press-file (tests): presses and screenshot requests appended by a driver
     int fps = 60;              // 60 (default): swap interval TWO paced as ONE, world step 1/60 s, weapon refire kept at
                                // whole 1/30 s steps (timing.cpp); --fps 30 = the original
-    // Menu choices for widescreen and fps, which the game reads at boot: saved to black.ini for the next run while
+    // Menu choices for aspect ratio and fps, which the game reads at boot: saved to black.ini for the next run while
     // the running session keeps the values above (0 / -1 = no change chosen).
     int fps_next = 0;
-    int widescreen_next = -1;
+    int aspect_next = -1;      // Aspect value, -1 = no change chosen
     bool reverb = true;        // mix the I3DL2 reverb send (--no-reverb to compare)
     float reverb_gain = 1.0f;  // --reverb-gain: overall reverb level
     bool background = false;   // --background (tests): window minimised without focus, audio muted

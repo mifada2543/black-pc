@@ -29,6 +29,7 @@ void settings_load()
     FILE *f = nullptr;
     if (_wfopen_s(&f, ini_file().c_str(), L"r") || !f) return;
     char line[256];
+    bool aspect_seen = false; // "aspect" wins over the older "widescreen" key regardless of line order
     while (fgets(line, sizeof line, f)) {
         char key[64] = "", val[128] = "";
         if (line[0] == '#' || sscanf_s(line, " %63[^= ] = %127s", key, (unsigned)sizeof key, val, (unsigned)sizeof val) != 2) continue;
@@ -46,7 +47,16 @@ void settings_load()
         else if (k == "seamfill") g_cfg.seam_fill = v != 0;
         else if (k == "effectsnative") g_cfg.effects_native = v != 0;
         else if (k == "fps") g_cfg.fps = atoi(val) == 60 ? 60 : 30;
-        else if (k == "widescreen") g_cfg.widescreen = v != 0;
+        else if (k == "widescreen") {
+            if (!aspect_seen) g_cfg.aspect = v != 0 ? Aspect::Wide16x9 : Aspect::Normal4x3;
+        }
+        else if (k == "aspect") {
+            if (!strcmp(val, "4:3") || !strcmp(val, "4x3")) g_cfg.aspect = Aspect::Normal4x3;
+            else if (!strcmp(val, "16:10") || !strcmp(val, "16x10")) g_cfg.aspect = Aspect::Wide16x10;
+            else if (!strcmp(val, "16:9") || !strcmp(val, "16x9")) g_cfg.aspect = Aspect::Wide16x9;
+            else g_cfg.aspect = (Aspect)std::clamp(atoi(val), 0, 2);
+            aspect_seen = true;
+        }
         else if (k == "fullscreen") g_cfg.fullscreen = v != 0;
         else if (k == "gain") g_cfg.gain = std::clamp(v, 0.5f, 3.0f);
         else if (k == "gamma") g_cfg.gamma = std::clamp(v, 0.5f, 3.0f);
@@ -74,8 +84,10 @@ void settings_save()
     else fprintf(f, "render = scale\n");
     fprintf(f, "render_factor = %.2f\nscale = %.3f\n", g_cfg.render_factor, g_cfg.scale);
     int fps = g_cfg.fps_next ? g_cfg.fps_next : g_cfg.fps; // a menu choice for the next run wins
-    bool wide = g_cfg.widescreen_next >= 0 ? g_cfg.widescreen_next != 0 : g_cfg.widescreen;
-    fprintf(f, "aa = %d\nfps = %d\nwidescreen = %d\nfullscreen = %d\n", g_cfg.aa ? 1 : 0, fps, wide ? 1 : 0, g_cfg.fullscreen ? 1 : 0);
+    Aspect aspect = g_cfg.aspect_next >= 0 ? (Aspect)g_cfg.aspect_next : g_cfg.aspect;
+    // widescreen first: an older build that does not know "aspect" still gets the right 16:9/4:3 mode.
+    fprintf(f, "widescreen = %d\naspect = %s\n", aspect_wide(aspect) ? 1 : 0, aspect_name(aspect));
+    fprintf(f, "aa = %d\nfps = %d\nfullscreen = %d\n", g_cfg.aa ? 1 : 0, fps, g_cfg.fullscreen ? 1 : 0);
     fprintf(f, "gain = %.2f\ngamma = %.2f\n", g_cfg.gain, g_cfg.gamma);
     fprintf(f, "mouse_sens = %.3f\nmouse_invert = %d\n", g_cfg.mouse_sens, g_cfg.mouse_invert ? 1 : 0);
     fprintf(f, "reverb = %d\nreverb_gain = %.2f\n", g_cfg.reverb ? 1 : 0, g_cfg.reverb_gain);

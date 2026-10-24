@@ -15,7 +15,7 @@ An unofficial native Windows port (and playable on Linux) of **BLACK** (Criterio
 The game is fully playable. Please report problems in the issue tracker and include `port\black.log` (or `port/black.log` on Linux).
 
 - Any render resolution (720p to 4K and beyond, or a multiple of the window size), anti-aliasing
-- Widescreen 16:9 (the game's own widescreen mode) or 4:3, adjustable field of view
+- Widescreen 16:9 (the game's own widescreen mode), native 16:10, or 4:3, adjustable field of view
 - 60 fps (the default) or the original 30 fps
 - Mouse look, with the weapon swaying as it does with the stick; keys bound to the game's actions; XInput controllers
 - The port's settings in the game's own menus (Options > PC SETTINGS, and in the pause menu), including borderless fullscreen
@@ -160,7 +160,7 @@ The port's settings are in the game's menus: Options > PC SETTINGS on the main m
 | Page | Settings |
 |---|---|
 | VIDEO | render resolution, anti-aliasing, field of view, brightness, gamma, fullscreen |
-| DISPLAY | aspect ratio, frame rate (main menu only), filling geometry seams, effects at Xbox size |
+| DISPLAY | aspect ratio (4:3, 16:9, 16:10), frame rate (main menu only), filling geometry seams, effects at Xbox size |
 | AUDIO AND GAME | room reverb, auto-aim, skipping any movie |
 | CONTROLS | mouse sensitivity, mouse inversion, key bindings |
 
@@ -200,7 +200,7 @@ O executável `black.exe` carrega a sua própria cópia do arquivo `default.xbe`
 O jogo é totalmente jogável. Por favor, reporte problemas no rastreador de issues (issue tracker) e inclua o arquivo `port\black.log` (ou `port/black.log` no Linux).
 
 - Qualquer resolução de renderização (de 720p a 4K e além), anti-aliasing.
-- Widescreen 16:9 (o próprio modo widescreen nativo do jogo) ou 4:3, com campo de visão (FOV) ajustável.
+- Widescreen 16:9 (o próprio modo widescreen nativo do jogo), 16:10 nativo ou 4:3, com campo de visão (FOV) ajustável.
 - 60 fps (padrão) ou os 30 fps originais.
 - Visão pelo mouse (Mouse look), com a arma balançando; teclas vinculadas às ações do jogo; suporte a controles XInput.
 - Configurações do port integradas aos próprios menus do jogo (Options > PC SETTINGS e no menu de pausa), incluindo tela cheia sem bordas (borderless fullscreen).

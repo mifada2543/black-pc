@@ -119,8 +119,8 @@ void surface_size(const PixelContainer *s, uint32_t *w, uint32_t *h)
 } // namespace
 
 // Render resolution scale (--scale): host render targets and depth buffers are this many times the Xbox
-// size; keys and everything the game sees stay in Xbox pixels. In widescreen the game draws a 16:9 picture
-// into its 4:3 buffers (anamorphic), so the host targets are widened by 4/3 as well.
+// size; keys and everything the game sees stay in Xbox pixels. In widescreen the game draws a 16:9 or 16:10
+// picture into its 4:3 buffers (anamorphic), so the host targets are widened by 4/3 or 6/5 as well.
 float g_scale_x, g_scale_y; // set at CreateDevice (setup_render_scale), changed at run time by change_render_scale
 int g_native_w, g_native_h; // the picture size the native render size was made for
 std::atomic<bool> g_render_request{false}; // the menu changed the render-size settings
@@ -129,10 +129,12 @@ D3DRECT g_scissor;          // the game's scissor rectangle (Xbox pixels) and wh
 bool g_scissor_on;
 
 // The render size: --resolution (WxH, H, native) or --scale. x and y are separate factors, so any size works;
-// in widescreen a picture with square pixels has x = 4/3 y. Kept within Direct3D 9's 8192 texture limit.
+// in widescreen a picture with square pixels has x = 4/3 y (16:9) or 6/5 y (16:10). Kept within Direct3D 9's
+// 8192 texture limit.
 void setup_render_scale(int pic_w, int pic_h)
 {
-    float aspect = g_cfg.widescreen ? 4.0f / 3.0f : 1.0f, w = (float)g_width, h = (float)g_height;
+    float aspect = aspect_wide(g_cfg.aspect) ? aspect_ratio(g_cfg.aspect) / (4.0f / 3.0f) : 1.0f;
+    float w = (float)g_width, h = (float)g_height;
     float sx = g_cfg.scale * aspect, sy = g_cfg.scale;
     if (g_cfg.render_native && pic_w > 0 && pic_h > 0) {
         sx = pic_w * g_cfg.render_factor / w;
@@ -870,7 +872,10 @@ HRESULT __stdcall Direct3D_CreateDevice(uint32_t Adapter, uint32_t DeviceType, u
     g_height = pp->BackBufferHeight ? pp->BackBufferHeight : 480;
     // The window and the host back buffer are the screen-sized output; the game renders into host render
     // targets at Xbox size x render scale, filtered into the back buffer at Swap.
-    if (!host3d::open_window(g_cfg.window_w, g_cfg.window_h, g_cfg.widescreen ? 16 : 4, g_cfg.widescreen ? 9 : 3))
+    int aspect_w = 4, aspect_h = 3;
+    if (g_cfg.aspect == Aspect::Wide16x9) { aspect_w = 16; aspect_h = 9; }
+    else if (g_cfg.aspect == Aspect::Wide16x10) { aspect_w = 16; aspect_h = 10; }
+    if (!host3d::open_window(g_cfg.window_w, g_cfg.window_h, aspect_w, aspect_h))
         return D3DERR_NOTAVAILABLE;
     if (!host3d::create_device()) return D3DERR_NOTAVAILABLE;
     RECT frame, pic; // the picture's size in the window (for --resolution native)
@@ -879,7 +884,7 @@ HRESULT __stdcall Direct3D_CreateDevice(uint32_t Adapter, uint32_t DeviceType, u
     g_native_h = pic.bottom - pic.top;
     setup_render_scale(g_native_w, g_native_h);
     logf("[d3d] rendering at %ux%u (x%.4g by x%.4g the Xbox's %dx%d, %s), picture in the window %ldx%ld", host_w(g_width),
-         host_h(g_height), scale_x(), scale_y(), g_width, g_height, g_cfg.widescreen ? "widescreen 16:9" : "4:3",
+         host_h(g_height), scale_x(), scale_y(), g_width, g_height, aspect_name(g_cfg.aspect),
          pic.right - pic.left, pic.bottom - pic.top);
     host3d::dev()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &g_host_backbuffer);
     host3d::dev()->GetDepthStencilSurface(&g_host_depth);

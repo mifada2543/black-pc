@@ -94,7 +94,7 @@ NTSTATUS __stdcall ExQueryNonVolatileSetting(uint32_t ValueIndex, uint32_t *Type
     case 0x002: case 0x005: type = 3; break;       // XC_TZ_STD_DATE / XC_TZ_DLT_DATE
     case 0x003: case 0x006: dword = 0; break;      // XC_TZ_STD_BIAS / XC_TZ_DLT_BIAS
     case 0x007: dword = 1; break;                  // XC_LANGUAGE: English
-    case 0x008: dword = g_cfg.widescreen ? 0x00010000 : 0; break; // XC_VIDEO: bit 16 = widescreen TV, no HD modes
+    case 0x008: dword = aspect_wide(g_cfg.aspect) ? 0x00010000 : 0; break; // XC_VIDEO: bit 16 = widescreen TV, no HD modes
     case 0x009: dword = 0; break;                  // XC_AUDIO: stereo
     case 0x00A: dword = 0; break;                  // XC_P_CONTROL_GAMES: no limit
     case 0x00B: dword = 0; break;                  // XC_P_CONTROL_PASSWORD

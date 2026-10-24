@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "aspect.h"
 #include "d3d/dispatch.h"
 #include "fe/calls.h"
 #include "fe/pages.h"
@@ -72,11 +73,12 @@ void usage()
            "  --shot-every N    with --screenshot: every N frames (default 60)\n"
            "  --shot-start S    with --screenshot: start the cadence S seconds after the first frame\n"
            "  --gamma G         extra output gamma after the game's ramp (default 1.0; >1 brighter; F7/F8 adjust live)\n"
-           "  --scale K         render at K x the Xbox resolution, any factor 0.5-8 (default 3 = 2560x1440 widescreen)\n"
-           "  --resolution R    render size instead of --scale: WxH (e.g. 1920x1080), H (width from the aspect)\n"
+           "  --scale K         render at K x the Xbox resolution, any factor 0.5-8 (default 3 = 2560x1440 at 16:9)\n"
+           "  --resolution R    render size instead of --scale: WxH (e.g. 1920x1200), H (width from the aspect)\n"
            "                    or native (the window's size at start, the screen's with --fullscreen)\n"
            "  --window WxH      window client size (default: largest size of the game's aspect that fits the screen)\n"
-           "  --normal-aspect   4:3 like an original Xbox on a standard TV (default: widescreen 16:9)\n"
+           "  --aspect R        picture shape: 4:3, 16:9 (default), or 16:10 (native, not stretched)\n"
+           "  --normal-aspect   4:3 like an original Xbox on a standard TV (same as --aspect 4:3)\n"
            "  --fullscreen      start in borderless fullscreen\n"
            "  --fps 30|60       frame rate (default 60; 30 is the original)\n"
            "  --no-reverb       do not mix the room reverb\n"
@@ -164,7 +166,21 @@ bool parse_args()
             g_cfg.game_cpu = _wtoi(v.c_str());
         }
         else if (a == L"--skip-videos") g_cfg.skip_videos = true;
-        else if (a == L"--normal-aspect") { g_cfg.widescreen = false; settings_mark_cli("widescreen"); }
+        else if (a == L"--normal-aspect") {
+            g_cfg.aspect = Aspect::Normal4x3;
+            settings_mark_cli("aspect");
+            settings_mark_cli("widescreen");
+        }
+        else if (a == L"--aspect") {
+            std::wstring v;
+            if (!next(v)) return false;
+            if (v == L"4:3" || v == L"4x3" || v == L"0") g_cfg.aspect = Aspect::Normal4x3;
+            else if (v == L"16:9" || v == L"16x9" || v == L"1") g_cfg.aspect = Aspect::Wide16x9;
+            else if (v == L"16:10" || v == L"16x10" || v == L"2") g_cfg.aspect = Aspect::Wide16x10;
+            else return false;
+            settings_mark_cli("aspect");
+            settings_mark_cli("widescreen");
+        }
         else if (a == L"--fullscreen") { g_cfg.fullscreen = true; settings_mark_cli("fullscreen"); }
         else if (a == L"--no-reverb") { g_cfg.reverb = false; settings_mark_cli("reverb"); }
         else if (a == L"--no-ramp") g_cfg.ramp = false;
@@ -446,6 +462,14 @@ int run(void *reserve, unsigned reserve_size)
     if (known_build) install_mouselook_patches();
     if (known_build) install_autoaim_patch();
     if (known_build) install_fov_patch();
+    if (g_cfg.aspect == Aspect::Wide16x10 && !known_build) {
+        logf("aspect: 16:10 needs the known NTSC-U build; using 16:9");
+        g_cfg.aspect = Aspect::Wide16x9;
+    }
+    if (known_build && !install_aspect_patch()) {
+        logf("aspect: 16:10 patch failed; using 16:9");
+        g_cfg.aspect = Aspect::Wide16x9;
+    }
     if (known_build) install_fe_calls();
     if (known_build && g_cfg.pc_menus) { // the in-game PC SETTINGS pages, from the user's own front-end file
         std::wstring cache = g_cfg.port_dir + L"\\cache\\menus";

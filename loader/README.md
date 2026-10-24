@@ -31,8 +31,10 @@ options (`--timeout`, `--screenshot`, `--shot-every`, `--shot-start`, `--debug-f
 `--watch-pad`, `--probe`, `--background`, `--wav`).
 
 Display: widescreen 16:9 by default (the console reports a widescreen TV and BLACK switches to its own 16:9
-camera and UI layouts); `--normal-aspect` for 4:3. `--scale K` renders at K x the Xbox resolution (any
-factor, default 3 = 2560x1440 in widescreen, 1920x1440 in 4:3); `--resolution 1920x1080` (or just `1080`, or
+camera and UI layouts); `--aspect 16:10` for native 16:10 (the wide UI layouts remain, the camera aspect is
+1.6, and the extra height is real geometry rather than a stretch); `--normal-aspect` for 4:3. `--scale K`
+renders at K x the Xbox resolution (any factor, default 3 = 2560x1440 at 16:9, 2304x1440 at 16:10,
+1920x1440 in 4:3); `--resolution 1920x1200` (or just `1200`, or
 `native` = the window's size, and then it follows the window when it is resized) sets the render size directly. `--window WxH` sets the window size (default: the
 largest that fits the screen), `--fullscreen` starts borderless fullscreen. `--gain K` / `--gamma G` adjust the
 output after the game's own gamma ramp (default 1.0 / 1.0; `--no-ramp` shows the raw framebuffer). `--mouse-sens K` (0.022 degrees x K per count, default 2.0) and

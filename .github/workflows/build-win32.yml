@@ -1,0 +1,41 @@
+name: build-win32
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - "aspect/**"
+      - "16-10-aspect"
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: loader
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure (Visual Studio 2022, Win32)
+        run: cmake --preset win32-vs2022
+
+      - name: Build (RelWithDebInfo)
+        run: cmake --build build/win32-vs2022 --config RelWithDebInfo
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-FileHash build/win32-vs2022/RelWithDebInfo/black.exe -Algorithm SHA256
+          Get-FileHash build/win32-vs2022/RelWithDebInfo/blackrt.dll -Algorithm SHA256
+
+      - name: Upload binaries and symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: black-pc-win32
+          path: |
+            loader/build/win32-vs2022/RelWithDebInfo/black.exe
+            loader/build/win32-vs2022/RelWithDebInfo/blackrt.dll
+            loader/build/win32-vs2022/RelWithDebInfo/blackrt.pdb
+            loader/build/win32-vs2022/RelWithDebInfo/blackrt.map
+          if-no-files-found: error
