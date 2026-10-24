@@ -10,7 +10,9 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    # Pin the image that ships Visual Studio 2022: windows-latest now has VS 2026, and the
+    # release preset below is the VS 2022 one.
+    runs-on: windows-2022
     defaults:
       run:
         working-directory: loader
