@@ -12,7 +12,7 @@ horizontal field of view and gains vertical field of view instead of being stret
   `1.6f` value in the DLL. The 4:3 branch is untouched.
 - The view setup (`FUN_000D2F40`) reads that aspect from `[0x2D67F4] + 0xD4C4` and divides the horizontal half
   width by it. With the horizontal FOV unchanged, the vertical FOV grows from about 43 degrees (16:9) to about
-  46.4 degrees (16:10), which is the extra height a 16:10 display can show.
+  47.3 degrees (16:10), which is the extra height a 16:10 display can show.
 - The loader widens its host render targets by `1.2` instead of `4/3` and opens a 16:10 window. `--scale 3`
   therefore renders `2304x1440`; `--resolution 1920x1200` (or `--resolution 1200`) renders at the display's
   native 16:10 size.
@@ -33,6 +33,12 @@ aspect = 16:10
 The default remains 16:9, and `--normal-aspect` (or `aspect = 4:3`) still selects 4:3. The in-game
 PC SETTINGS > DISPLAY > ASPECT RATIO row offers all three; aspect changes take effect on the next start because
 the game reads the video mode at boot.
+
+## Verified
+
+The Windows build was checked on GE-Proton11-6 at 1600x1000. The log reports `rendering at 1600x1000 ... 16:10`
+and `aspect: camera aspect 16:10 (1.6)`, the Display page shows `ASPECT RATIO 16:10`, and the save path still
+enumerates `NtQueryDirectoryFile ... ev 00000000` (the Wine save fix).
 
 ## Limits
 
