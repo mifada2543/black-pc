@@ -57,5 +57,8 @@ cache/
 # Local copies of upstream-style patches (kept for reference, not tracked)
 /patches/
 
+# The local Proton prefix (Wine environment for the port)
+/.proton-black/
+
 # Python bytecode from the tools
 __pycache__/
